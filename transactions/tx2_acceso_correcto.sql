@@ -1,40 +1,27 @@
--- Nivel de aislamiento: READ COMMITTED
--- Justificación: Asegura que estamos leyendo un estado válido de la base de datos.
+-- =============================================
+-- TRANSACCIÓN 2: Registro de acceso exitoso
+-- ACID dominante: Consistencia
+-- Nivel de aislamiento: REPEATABLE READ
+-- Justificación: Garantiza que los datos usados para validar el acceso no cambien durante el proceso.
+-- =============================================
 
 BEGIN;
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SAVEPOINT sp_acceso;
 
-SAVEPOINT inicio_acceso;
+WITH acceso_valido AS (
+    SELECT 1 FROM usuarios u
+    JOIN dispositivos d ON d.estado = TRUE
+    WHERE u.id_usuario = 1 AND d.id_dispositivo = 2
+)
+INSERT INTO registros_acceso (id_usuario, id_dispositivo, exito)
+SELECT 1, 2, TRUE WHERE EXISTS (SELECT 1 FROM acceso_valido);
 
-DO $$
-DECLARE
-    v_id_usuario INT;
-BEGIN
-    -- Verificar si el usuario existe
-    SELECT id_usuario INTO v_id_usuario
-    FROM usuarios
-    WHERE cedula = '1316229739';
-    
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'Usuario no encontrado';
-    END IF;
+INSERT INTO transacciones_log(descripcion, estado_tx)
+VALUES ('Acceso exitoso usuario 1 en dispositivo 2', 'COMMIT');
 
-    -- Registrar el acceso exitoso
-    INSERT INTO registros_acceso (id_usuario, id_dispositivo, exito)
-    VALUES (v_id_usuario, 1, TRUE);
-
-    -- Registrar transacción exitosa
-    INSERT INTO transacciones_log (descripcion, estado_tx)
-    VALUES ('Registro de acceso exitoso', 'COMMIT');
-
-EXCEPTION WHEN OTHERS THEN
-    -- En caso de error, revertimos
-    ROLLBACK TO inicio_acceso;
-    
-    -- Registramos el error
-    INSERT INTO transacciones_log (descripcion, estado_tx)
-    VALUES ('Error en registro de acceso: ' || SQLERRM, 'ROLLBACK');
-    
-    RAISE EXCEPTION 'Error en la transacción: %', SQLERRM;
-END $$;
+INSERT INTO logs_eventos(evento, descripcion, nivel)
+VALUES ('Acceso exitoso', 'Usuario 1 ingresó por dispositivo 2', 'INFO');
 
 COMMIT;
+

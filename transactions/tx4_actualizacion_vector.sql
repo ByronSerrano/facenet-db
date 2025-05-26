@@ -1,34 +1,23 @@
+-- =============================================
+-- TRANSACCIÓN 4: Actualización de vector facial
+-- ACID dominante: Consistencia
 -- Nivel de aislamiento: REPEATABLE READ
--- Justificación: Se garantiza que los datos leídos no cambien durante la transacción.
+-- Justificación: Previene modificaciones simultáneas del vector facial del mismo usuario.
+-- =============================================
 
 BEGIN;
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 
-SAVEPOINT actualizar_vector;
+SAVEPOINT sp_actualizacion;
 
-DO $$
-DECLARE
-    v_id_usuario INT;
-BEGIN
-    -- Obtenemos el ID del usuario
-    SELECT id_usuario INTO v_id_usuario
-    FROM usuarios WHERE cedula = '1316229739';
+UPDATE vectores_faciales
+SET vector = ARRAY[0.45, 0.67, 0.89, 0.12], fecha_almacenamiento = NOW()
+WHERE id_usuario = 1 AND id_vector = 1;
 
-    -- Actualizamos su vector facial
-    UPDATE vectores_faciales
-    SET vector = ARRAY[0.5, 0.6, 0.7, 0.8],
-        version_algoritmo = 'FaceNet-v2'
-    WHERE id_usuario = v_id_usuario;
+INSERT INTO transacciones_log(descripcion, estado_tx)
+VALUES ('Actualización vector facial usuario 1', 'COMMIT');
 
-    INSERT INTO transacciones_log (descripcion, estado_tx)
-    VALUES ('Vector facial actualizado para usuario 1316229739', 'COMMIT');
-
-EXCEPTION WHEN OTHERS THEN
-    ROLLBACK TO actualizar_vector;
-
-    INSERT INTO transacciones_log (descripcion, estado_tx)
-    VALUES ('Error en actualización de vector: ' || SQLERRM, 'ROLLBACK');
-
-    RAISE EXCEPTION 'Error en actualización de vector: %', SQLERRM;
-END $$;
+INSERT INTO logs_eventos(evento, descripcion, nivel)
+VALUES ('Actualización biométrica', 'Vector actualizado para usuario 1', 'INFO');
 
 COMMIT;

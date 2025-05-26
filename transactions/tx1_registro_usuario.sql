@@ -1,36 +1,25 @@
--- Nivel de aislamiento: READ COMMITTED (por defecto)
--- Justificación: No hay riesgo de lecturas sucias, ya que estamos insertando datos nuevos.
+-- =============================================
+-- TRANSACCIÓN 1: Registro de nuevo usuario y su vector facial
+-- ACID dominante: Atomicidad
+-- Nivel de aislamiento: SERIALIZABLE
+-- Justificación: Se requiere consistencia estricta para evitar duplicidad de cédula o correo en concurrencia.
+-- =============================================
 
 BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-SAVEPOINT inicio_registro;
+SAVEPOINT sp_reg_usuario;
 
-DO $$
-DECLARE
-    v_id_usuario INT;
-BEGIN
-    -- Registro del nuevo usuario
-    INSERT INTO usuarios (cedula, nombres, apellidos, tipo_usuario, correo_institucional)
-    VALUES ('1316229739', 'Johannes', 'Carofilis', 'estudiante', 'jcarofilis9739@pucesm.edu.ec')
-    RETURNING id_usuario INTO v_id_usuario;
+INSERT INTO usuarios(cedula, nombres, apellidos, tipo_usuario, correo_institucional)
+VALUES ('0102030405', 'Ana', 'Pérez', 'estudiante', 'ana.perez@uce.edu.ec');
 
-    -- Registro del vector facial asociado
-    INSERT INTO vectores_faciales (id_usuario, vector)
-    VALUES (v_id_usuario, ARRAY[0.1, 0.2, 0.3, 0.4]);
+INSERT INTO vectores_faciales(id_usuario, vector, version_algoritmo)
+VALUES (currval('usuarios_id_usuario_seq'), ARRAY[0.123, 0.456, 0.789], 'FaceNet-v1');
 
-    -- Registro de transacción exitosa
-    INSERT INTO transacciones_log (descripcion, estado_tx)
-    VALUES ('Registro de usuario y vector facial exitoso', 'COMMIT');
+INSERT INTO transacciones_log(descripcion, estado_tx)
+VALUES ('Registro completo de usuario y vector facial', 'COMMIT');
 
-EXCEPTION WHEN OTHERS THEN
-    -- En caso de error, revertimos todo
-    ROLLBACK TO inicio_registro;
-    
-    -- Registramos el error
-    INSERT INTO transacciones_log (descripcion, estado_tx)
-    VALUES ('Error en registro de usuario: ' || SQLERRM, 'ROLLBACK');
-    
-    RAISE EXCEPTION 'Error en la transacción: %', SQLERRM;
-END $$;
+INSERT INTO logs_eventos(evento, descripcion, nivel)
+VALUES ('Registro usuario', 'Usuario 0102030405 registrado con embedding FaceNet-v1', 'INFO');
 
 COMMIT;
