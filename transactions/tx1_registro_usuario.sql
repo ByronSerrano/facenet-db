@@ -24,7 +24,7 @@ BEGIN
 
 EXCEPTION WHEN OTHERS THEN
     -- En caso de error, revertimos todo
-    ROLLBACK TO SAVEPOINT inicio_registro;
+    ROLLBACK TO inicio_registro;
     
     -- Registramos el error
     INSERT INTO transacciones_log (descripcion, estado_tx)
