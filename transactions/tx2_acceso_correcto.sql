@@ -7,7 +7,6 @@
 
 BEGIN;
 SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-SAVEPOINT sp_acceso;
 
 WITH acceso_valido AS (
     SELECT 1 FROM usuarios u

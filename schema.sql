@@ -1,33 +1,34 @@
+
 -- ========================================
 -- Esquema de Base de Datos para Sistema de Seguridad con Reconocimiento Facial (FACENET)
 -- Pontificia Universidad Católica del Ecuador Sede Manabí - Proyecto de Gestión de la Información
--- Autores: Byron Serrano, Johannes Carofilis y Stiven Guanoquiza
 -- ========================================
 
--- Tabla: usuarios
--- Almacena información personal de los usuarios registrados en el sistema
-CREATE TABLE usuarios (
-    id_usuario SERIAL PRIMARY KEY,
-    cedula VARCHAR(10) UNIQUE NOT NULL CHECK (LENGTH(cedula) = 10),
-    nombres VARCHAR(100) NOT NULL,
-    apellidos VARCHAR(100) NOT NULL,
-    id_tipo_usuario INT NOT NULL REFERENCES tipos_usuario(id_tipo_usuario),
-    correo_institucional VARCHAR(100) UNIQUE,
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Fecha en que se registró al usuario
-);
 
 -- Tabla: tipos_usuario
 -- Define los diferentes tipos/roles de usuarios en el sistema: estudiante, docente, administrativo, etc.
-CREATE TABLE tipos_usuario (
+CREATE TABLE tipo_usuario (
     id_tipo_usuario SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
     descripcion TEXT,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabla: usuarios
+-- Almacena información personal de los usuarios registrados en el sistema
+CREATE TABLE usuario (
+    id_usuario SERIAL PRIMARY KEY,
+    cedula VARCHAR(10) UNIQUE NOT NULL CHECK (LENGTH(cedula) = 10),
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    id_tipo_usuario INT NOT NULL REFERENCES tipo_usuario(id_tipo_usuario),
+    correo_institucional VARCHAR(100) UNIQUE,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Fecha en que se registró al usuario
+);
+
 -- Tabla: vectores_faciales
 -- Contiene los vectores de características del rostro de cada usuario
-CREATE TABLE vectores_faciales (
+CREATE TABLE vector_facial (
     id_vector SERIAL PRIMARY KEY,
     id_usuario INT NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
     vector FLOAT8[] NOT NULL, -- Array de floats que representa el rostro (embedding)
@@ -37,7 +38,7 @@ CREATE TABLE vectores_faciales (
 
 -- Tabla: dispositivos
 -- Dispositivos físicos como cámaras o lectores instalados en la universidad
-CREATE TABLE dispositivos (
+CREATE TABLE dispositivo (
     id_dispositivo SERIAL PRIMARY KEY,
     ubicacion VARCHAR(100) NOT NULL, -- Ej: "Primera Entrada"
     descripcion TEXT,
@@ -47,10 +48,10 @@ CREATE TABLE dispositivos (
 
 -- Tabla: registros_acceso
 -- Registro de cada intento de acceso, exitoso o fallido
-CREATE TABLE registros_acceso (
+CREATE TABLE registro_acceso (
     id_acceso SERIAL PRIMARY KEY,
-    id_usuario INT REFERENCES usuarios(id_usuario),
-    id_dispositivo INT REFERENCES dispositivos(id_dispositivo),
+    id_usuario INT REFERENCES usuario(id_usuario),
+    id_dispositivo INT REFERENCES dispositivo(id_dispositivo),
     fecha_acceso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     exito BOOLEAN NOT NULL, -- TRUE si el reconocimiento fue exitoso
     motivo_fallo TEXT -- Si exito=FALSE, describe el motivo: "No reconocido", "Rostro cubierto", etc.
@@ -58,7 +59,7 @@ CREATE TABLE registros_acceso (
 
 -- Tabla: logs_eventos
 -- Registro de eventos internos del sistema como errores, advertencias, etc.
-CREATE TABLE logs_eventos (
+CREATE TABLE log_evento (
     id_log SERIAL PRIMARY KEY,
     evento VARCHAR(255) NOT NULL,
     descripcion TEXT,
@@ -68,7 +69,7 @@ CREATE TABLE logs_eventos (
 
 -- Tabla: transacciones_log
 -- Guarda el estado de transacciones realizadas durante pruebas de ACID
-CREATE TABLE transacciones_log (
+CREATE TABLE transaccion_log (
     id_tx SERIAL PRIMARY KEY,
     descripcion TEXT,
     estado_tx VARCHAR(10) NOT NULL CHECK (estado_tx IN ('COMMIT', 'ROLLBACK', 'ERROR')),

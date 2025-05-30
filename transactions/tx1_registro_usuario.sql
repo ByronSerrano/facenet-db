@@ -6,18 +6,27 @@
 -- =============================================
 
 BEGIN;
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+  SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-INSERT INTO usuarios(cedula, nombres, apellidos, tipo_usuario, correo_institucional)
-VALUES ('0102030405', 'Ana', 'Pérez', 'estudiante', 'ana.perez@uce.edu.ec');
+  INSERT INTO usuario(cedula, nombres, apellidos, id_tipo_usuario, correo_institucional)
+  VALUES ('0102030405', 'Ana', 'Pérez', 1, 'ana.perez@pucem.edu.ec');
 
-INSERT INTO vectores_faciales(id_usuario, vector, version_algoritmo)
-VALUES (currval('usuarios_id_usuario_seq'), ARRAY[0.123, 0.456, 0.789], 'FaceNet-v1');
+  INSERT INTO vector_facial(id_usuario, vector, version_algoritmo)
+  VALUES (currval('usuario_id_usuario_seq'), ARRAY[0.123, 0.456, 0.789], 'FaceNet-v1');
 
-INSERT INTO transacciones_log(descripcion, estado_tx)
-VALUES ('Registro completo de usuario y vector facial', 'COMMIT');
+  INSERT INTO transaccion_log(descripcion, estado_tx)
+  VALUES ('Registro completo de usuario y vector facial', 'COMMIT');
 
-INSERT INTO logs_eventos(evento, descripcion, nivel)
-VALUES ('Registro usuario', 'Usuario 0102030405 registrado con embedding FaceNet-v1', 'INFO');
+  INSERT INTO log_evento(evento, descripcion, nivel)
+  VALUES ('Registro usuario', 'Usuario 0102030405 registrado con embedding FaceNet-v1', 'INFO');
 
-COMMIT;
+  EXCEPTION WHEN OTHERS THEN
+    -- Manejo de errores, rollback si es necesario
+    INSERT INTO transaccion_log(descripcion, estado_tx)
+    VALUES ('Error al consultar accesos usuario: ' || v_id_usuario, 'ROLLBACK');
+    ROLLBACK;
+  END;
+
+  COMMIT;
+
+END;
