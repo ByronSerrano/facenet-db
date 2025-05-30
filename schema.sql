@@ -11,9 +11,18 @@ CREATE TABLE usuarios (
     cedula VARCHAR(10) UNIQUE NOT NULL CHECK (LENGTH(cedula) = 10),
     nombres VARCHAR(100) NOT NULL,
     apellidos VARCHAR(100) NOT NULL,
-    tipo_usuario VARCHAR(20) NOT NULL CHECK (tipo_usuario IN ('estudiante', 'docente', 'administrativo', 'visitante')),
+    id_tipo_usuario INT NOT NULL REFERENCES tipos_usuario(id_tipo_usuario),
     correo_institucional VARCHAR(100) UNIQUE,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Fecha en que se registró al usuario
+);
+
+-- Tabla: tipos_usuario
+-- Define los diferentes tipos/roles de usuarios en el sistema: estudiante, docente, administrativo, etc.
+CREATE TABLE tipos_usuario (
+    id_tipo_usuario SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla: vectores_faciales
