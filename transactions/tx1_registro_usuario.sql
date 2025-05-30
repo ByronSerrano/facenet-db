@@ -8,8 +8,6 @@
 BEGIN;
 SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-SAVEPOINT sp_reg_usuario;
-
 INSERT INTO usuarios(cedula, nombres, apellidos, tipo_usuario, correo_institucional)
 VALUES ('0102030405', 'Ana', 'Pérez', 'estudiante', 'ana.perez@uce.edu.ec');
 
