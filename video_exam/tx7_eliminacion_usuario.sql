@@ -6,9 +6,6 @@
 -- =============================================
 
 BEGIN;
-SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
-
-SAVEPOINT sp_eliminacion;
 
 DELETE FROM registro_acceso WHERE id_usuario = 4;
 DELETE FROM vector_facial WHERE id_usuario = 4;

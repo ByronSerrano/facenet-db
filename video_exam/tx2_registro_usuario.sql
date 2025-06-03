@@ -8,8 +8,6 @@
 BEGIN;
 SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-SAVEPOINT sp_registro_usuario;
-
 -- Insertar usuario
 INSERT INTO usuario(cedula, nombres, apellidos, id_tipo_usuario, correo_institucional)
 VALUES ('0102030405', 'Ana', 'Pérez', 1, 'ana.perez@pucem.edu.ec');
