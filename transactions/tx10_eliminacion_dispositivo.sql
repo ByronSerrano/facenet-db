@@ -11,16 +11,16 @@ SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 SAVEPOINT sp_eliminacion_condicional;
 
 WITH registros_asociados AS (
-    SELECT 1 FROM registros_acceso WHERE id_dispositivo = 6 LIMIT 1
+    SELECT 1 FROM registro_acceso WHERE id_dispositivo = 6 LIMIT 1
 )
-DELETE FROM dispositivos
+DELETE FROM dispositivo
 WHERE id_dispositivo = 6
 AND NOT EXISTS (SELECT 1 FROM registros_asociados);
 
-INSERT INTO transacciones_log(descripcion, estado_tx)
+INSERT INTO transaccion_log(descripcion, estado_tx)
 VALUES ('Eliminación condicional dispositivo 6', 'COMMIT');
 
-INSERT INTO logs_eventos(evento, descripcion, nivel)
+INSERT INTO log_evento(evento, descripcion, nivel)
 VALUES ('Mantenimiento', 'Dispositivo 6 eliminado sin registros asociados', 'INFO');
 
 COMMIT;

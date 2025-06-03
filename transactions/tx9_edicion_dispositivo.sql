@@ -1,22 +1,24 @@
 -- =============================================
--- TRANSACCIÓN 8: Creación de dispositivo
--- ACID dominante: Atomicidad
+-- TRANSACCIÓN 9: Edición de dispositivo existente
+-- ACID dominante: Consistencia
 -- Nivel de aislamiento: READ COMMITTED
--- Justificación: Transacción sencilla, sin conflictos concurrentes, requiere inserción segura.
+-- Justificación: Actualización sencilla de datos del dispositivo.
 -- =============================================
 
 BEGIN;
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
-SAVEPOINT sp_nuevo_dispositivo;
+SAVEPOINT sp_edicion_dispositivo;
 
-INSERT INTO dispositivos (ubicacion, descripcion, fecha_instalacion)
-VALUES ('Edificio C - Entrada Principal', 'Cámara térmica facial 4K', '2024-03-15');
+UPDATE dispositivo 
+SET descripcion = 'Cámara térmica facial 4K - Actualizada',
+    ubicacion = 'Edificio C - Entrada Principal Renovada'
+WHERE id_dispositivo = 4;
 
-INSERT INTO transacciones_log(descripcion, estado_tx)
-VALUES ('Instalación nuevo dispositivo en Edificio C', 'COMMIT');
+INSERT INTO transaccion_log(descripcion, estado_tx)
+VALUES ('Actualización información dispositivo 4', 'COMMIT');
 
-INSERT INTO logs_eventos(evento, descripcion, nivel)
-VALUES ('Nuevo dispositivo', 'Dispositivo instalado en Edificio C', 'INFO');
+INSERT INTO log_evento(evento, descripcion, nivel)
+VALUES ('Actualización dispositivo', 'Información del dispositivo 4 actualizada', 'INFO');
 
 COMMIT;

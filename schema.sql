@@ -30,7 +30,7 @@ CREATE TABLE usuario (
 -- Contiene los vectores de características del rostro de cada usuario
 CREATE TABLE vector_facial (
     id_vector SERIAL PRIMARY KEY,
-    id_usuario INT NOT NULL REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    id_usuario INT NOT NULL REFERENCES usuario(id_usuario) ON DELETE CASCADE,
     vector FLOAT8[] NOT NULL, -- Array de floats que representa el rostro (embedding)
     fecha_almacenamiento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     version_algoritmo VARCHAR(50) DEFAULT 'FaceNet-v1' -- Algoritmo usado para generar el vector

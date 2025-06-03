@@ -10,14 +10,14 @@ SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 
 SAVEPOINT sp_actualizacion;
 
-UPDATE vectores_faciales
+UPDATE vector_facial
 SET vector = ARRAY[0.45, 0.67, 0.89, 0.12], fecha_almacenamiento = NOW()
 WHERE id_usuario = 1 AND id_vector = 1;
 
-INSERT INTO transacciones_log(descripcion, estado_tx)
+INSERT INTO transaccion_log(descripcion, estado_tx)
 VALUES ('Actualización vector facial usuario 1', 'COMMIT');
 
-INSERT INTO logs_eventos(evento, descripcion, nivel)
+INSERT INTO log_evento(evento, descripcion, nivel)
 VALUES ('Actualización biométrica', 'Vector actualizado para usuario 1', 'INFO');
 
 COMMIT;

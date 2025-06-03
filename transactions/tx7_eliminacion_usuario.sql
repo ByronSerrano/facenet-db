@@ -10,14 +10,14 @@ SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
 SAVEPOINT sp_eliminacion;
 
-DELETE FROM registros_acceso WHERE id_usuario = 4;
-DELETE FROM vectores_faciales WHERE id_usuario = 4;
-DELETE FROM usuarios WHERE id_usuario = 4;
+DELETE FROM registro_acceso WHERE id_usuario = 4;
+DELETE FROM vector_facial WHERE id_usuario = 4;
+DELETE FROM usuario WHERE id_usuario = 4;
 
-INSERT INTO transacciones_log(descripcion, estado_tx)
+INSERT INTO transaccion_log(descripcion, estado_tx)
 VALUES ('Eliminación usuario 4 con registros asociados', 'COMMIT');
 
-INSERT INTO logs_eventos(evento, descripcion, nivel)
+INSERT INTO log_evento(evento, descripcion, nivel)
 VALUES ('Eliminación usuario', 'Usuario 4 y datos relacionados eliminados', 'INFO');
 
 COMMIT;

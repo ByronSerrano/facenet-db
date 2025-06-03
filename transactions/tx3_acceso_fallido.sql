@@ -10,13 +10,13 @@ SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
 SAVEPOINT sp_intento_fallido;
 
-INSERT INTO registros_acceso (id_usuario, id_dispositivo, exito, motivo_fallo)
+INSERT INTO registro_acceso (id_usuario, id_dispositivo, exito, motivo_fallo)
 VALUES (NULL, 1, FALSE, 'Reconocimiento facial fallido - baja confianza');
 
-INSERT INTO transacciones_log(descripcion, estado_tx)
+INSERT INTO transaccion_log(descripcion, estado_tx)
 VALUES ('Intento de acceso fallido dispositivo 1', 'COMMIT');
 
-INSERT INTO logs_eventos(evento, descripcion, nivel)
+INSERT INTO log_evento(evento, descripcion, nivel)
 VALUES ('Acceso fallido', 'Intento no reconocido en dispositivo 1', 'WARNING');
 
 COMMIT;

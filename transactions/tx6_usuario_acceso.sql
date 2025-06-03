@@ -6,32 +6,39 @@
 -- evitando lecturas sucias pero permitiendo nuevos registros de acceso.
 -- =============================================
 
-BEGIN;
-  SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
-
-  DECLARE
+DO $$
+DECLARE
     v_id_usuario INT;
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
-  -- Obtener ID del usuario usando  para bloquear la fila
-  SELECT id_usuario INTO v_id_usuario
-  FROM usuarios 
-  WHERE cedula = '0102030405';
+    -- Obtener ID del usuario
+    SELECT id_usuario INTO v_id_usuario
+    FROM usuario 
+    WHERE cedula = '0102030405';
 
-  SELECT * FROM registros_acceso WHERE id_usuario = v_id_usuario
-  ORDER BY fecha_acceso DESC;
+    -- Si el usuario existe, consultar sus accesos
+    IF v_id_usuario IS NOT NULL THEN
+        -- Esta consulta mostraría los resultados en un entorno real
+        PERFORM * FROM registro_acceso 
+        WHERE id_usuario = v_id_usuario
+        ORDER BY fecha_acceso DESC;
 
-  INSERT INTO logs_eventos(evento, descripcion, nivel)
-  VALUES ('Consulta accesos', 'Accesos consultados para usuario: ' || v_id_usuario, 'INFO');
+        INSERT INTO log_evento(evento, descripcion, nivel)
+        VALUES ('Consulta accesos', 'Accesos consultados para usuario: ' || v_id_usuario, 'INFO');
 
-  INSERT INTO transacciones_log(descripcion, estado_tx)
-  VALUES ('Consulta accesos usuario: ' || v_id_usuario, 'COMMIT');
+        INSERT INTO transaccion_log(descripcion, estado_tx)
+        VALUES ('Consulta accesos usuario: ' || v_id_usuario, 'COMMIT');
+    ELSE
+        INSERT INTO log_evento(evento, descripcion, nivel)
+        VALUES ('Consulta accesos', 'Usuario no encontrado con cédula: 0102030405', 'WARNING');
 
-  EXCEPTION WHEN OTHERS THEN
-    -- Manejo de errores, rollback si es necesario
-    INSERT INTO transacciones_log(descripcion, estado_tx)
-    VALUES ('Error al consultar accesos usuario: ' || v_id_usuario, 'ROLLBACK');
-    ROLLBACK;
-  END;
+        INSERT INTO transaccion_log(descripcion, estado_tx)
+        VALUES ('Error: Usuario no encontrado', 'ROLLBACK');
+    END IF;
 
-  COMMIT;
-END;
+EXCEPTION WHEN OTHERS THEN
+    INSERT INTO transaccion_log(descripcion, estado_tx)
+    VALUES ('Error al consultar accesos usuario: ' || COALESCE(v_id_usuario::text, 'NULL'), 'ROLLBACK');
+    RAISE;
+END $$;
